@@ -70,7 +70,7 @@ cat \
 
 rm $out.tmp.*
 
-Rscript knn.R \
+Rscript $(pwd)/knn.R \
   $out.kgp_projected.txt.gz \
   $out.kgp_projected.pdf
 

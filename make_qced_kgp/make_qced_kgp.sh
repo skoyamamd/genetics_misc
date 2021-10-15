@@ -14,7 +14,7 @@ wget -O tmp/sample.panel  $dir/integrated_call_samples_v3.20130502.ALL.panel
 ## Step 1: QC bfiles ##
 #######################
 
-for chr in {5..22}; do
+for chr in {1..22}; do
 
   file=ALL.chr${chr}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
 
