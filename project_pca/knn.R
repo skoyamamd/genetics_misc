@@ -1,10 +1,11 @@
 library(class)
 library(tidyverse)
+library(data.table)
 
 args    = commandArgs(trailingOnly=T)
 infile  = args[1]
 outfile = args[2]
-outpdf  = args[2]
+outpdf  = args[3]
 
 d       = read.table(infile, fill=T, header=T)
 sample  = read.table("tmp/sample.panel", header=T)
@@ -19,6 +20,7 @@ test$knn  = knn(train[,2:11], test[,2:11], train$super_pop)
 train$knn = train$super_pop
 
 out = rbind(test, train)
+fwrite(out, outfile, sep="\t", quote=F, row.names=F)
 
 pdf(outpdf, height=5, width=10)
 
