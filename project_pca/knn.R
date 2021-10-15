@@ -19,14 +19,15 @@ set.seed(1111)
 test$knn  = knn(train[,2:11], test[,2:11], train$super_pop)
 train$knn = train$super_pop
 
-out = rbind(test, train)
+out = rbind(test, train) %>% filter(pop="tgt") %>% select(ID, knn)
 fwrite(out, outfile, sep="\t", quote=F, row.names=F)
 
 pdf(outpdf, height=5, width=10)
 
   out %>% ggplot(aes(x=PC1, y=PC2, color=factor(knn))) + geom_point() + facet_grid(pop~knn)
   out %>% ggplot(aes(x=PC2, y=PC3, color=factor(knn))) + geom_point() + facet_grid(pop~knn)
-  out %>% ggplot(aes(x=PC3, y=PC4, color=factor(knn))) + geom_point() + facet_grid(pop~knn)
+  out %>% ggplot(aes(x=PC1, y=PC4, color=factor(knn))) + geom_point() + facet_grid(pop~knn)
+  out %>% ggplot(aes(x=PC2, y=PC4, color=factor(knn))) + geom_point() + facet_grid(pop~knn)
 
 dev.off()
 
