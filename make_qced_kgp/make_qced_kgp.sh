@@ -108,7 +108,7 @@ cat tmp/*.hwd | cut -f 2 | \
   sort | uniq > tmp/merged.hwd
 
 plink2 \
-  --bfile tmp/KGP.qced \
+  --bfile tmp/KGP.merged \
   --exclude tmp/merged.hwd \
   --make-pgen \
   --threads 4 \
