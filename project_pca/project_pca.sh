@@ -72,5 +72,6 @@ rm $out.tmp.*
 
 Rscript $(dirname $(readlink -f $0))/knn.R \
   $out.kgp_projected.txt.gz \
+  $out.kgp_projected.knn.gz \
   $out.kgp_projected.pdf
 

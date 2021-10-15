@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+set pipefail
 
 ####################################
 ## Create qced 1KG genotypes      ##
@@ -8,7 +10,9 @@
 mkdir -p tmp out
 
 dir=ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20130502
-wget -O tmp/sample.panel  $dir/integrated_call_samples_v3.20130502.ALL.panel
+wget -O tmp/sample.panel $dir/integrated_call_samples_v3.20130502.ALL.panel
+
+hd=tmp/KGP.tmp
 
 #######################
 ## Step 1: QC bfiles ##
@@ -29,36 +33,33 @@ for chr in {1..22}; do
     --geno 0.01 \
     --threads 4 \
     --memory 4800 \
-    --out tmp/KGP.$chr
+    --out $hd.$chr
 
-  cat tmp/KGP.$chr.pvar | grep -v "#" | \
+  cat $hd.$chr.pvar | grep -v "#" | \
     cut -f 1,2 | sort | uniq -d | \
-    awk -v OFS="\t" '{print $1,$2-1,$2}' > tmp/KGP.$chr.dup.bed
+    awk -v OFS="\t" '{print $1,$2-1,$2}' > $hd.$chr.dup.bed
 
-  cat ../tmp/KGP.$chr.pvar | grep -v "#" | \
+  cat $hd.$chr.pvar | grep -v "#" | \
     awk '($4~/A|T/ && $5~/T|A/) || ($4~/C|G/ && $5~/C|G/)' | \
-    awk -v OFS="\t" '{print $1,$2-1,$2}' >> tmp/KGP.$chr.dup.bed
+    awk -v OFS="\t" '{print $1,$2-1,$2}' >> $hd.$chr.dup.bed
 
   plink2 \
-    --pfile tmp/KGP.$chr \
-    --exclude bed0 tmp/KGP.$chr.dup.bed \
+    --pfile $hd.$chr \
+    --exclude bed0 $hd.$chr.dup.bed \
     --make-pgen \
     --set-all-var-ids '@:#:$r:$a' \
     --threads 4 \
     --memory 4800 \
-    --out tmp/KGP.nondup.$chr
+    --out $hd.nondup.$chr
 
   plink2 \
-    --pfile tmp/KGP.nondup.$chr \
+    --pfile $hd.nondup.$chr \
     --keep-allele-order \
     --make-bed \
     --threads 4 \
     --memory 4800 \
-    --out tmp/KGP.nondup.$chr
+    --out $hd.nondup.$chr
 
-  rm tmp/KGP.$chr.{pvar,psam,pgen}
-  rm tmp/KGP.nondup.$chr.{pvar,psam,pgen}
-  rm tmp/KGP.$chr.dup.bed
   rm tmp/$file
 
 done
@@ -67,15 +68,15 @@ done
 ## Step 2: merge bfiles ##
 ##########################
 
-ls tmp/KGP.nondup.*.bed | sort -V | sed 's/.bed//' | head -n 1 > tmp/merge.head
-ls tmp/KGP.nondup.*.bed | sort -V | sed 's/.bed//' | sed '1d' > tmp/merge.list
+ls $hd.nondup.*.bed | sort -V | sed 's/.bed//' | head -n 1 > $hd.merge.head
+ls $hd.nondup.*.bed | sort -V | sed 's/.bed//' | sed '1d'  > $hd.merge.list
 
 plink \
-  --bfile $(cat tmp/merge.head) \
-  --merge-list tmp/merge.list \
+  --bfile $(cat $hd.merge.head) \
+  --merge-list $hd.merge.list \
   --threads 4 \
   --memory 4800 \
-  --out tmp/KGP.merged
+  --out $hd.merged
 
 ###############################################################
 ## Step 3: population wise Hardy-Weinberg equilibrium filter ##
@@ -84,17 +85,17 @@ plink \
 cat tmp/sample.panel | sed '1d' | cut -f 3 | sort | uniq | while read pop; do
 
   plink2 \
-    --bfile tmp/KGP.merged \
+    --bfile $hd.merged \
     --hwe 1e-6 \
     --hardy \
     --keep <(cat tmp/sample.panel | sed '1d' | grep -w $pop | cut -f 1) \
     --threads 4 \
     --memory 4800 \
-    --out tmp/KGP.merged.$pop > /dev/null
+    --out $hd.$pop > /dev/null
 
-  cat tmp/KGP.merged.$pop.hardy | awk '$10<1e-6' > tmp/$pop.hwd
+  cat $hd.$pop.hardy | awk '$10<1e-6' > $hd.$pop.hwd
 
-  Nhwd=$(cat tmp/$pop.hwd | wc -l)
+  Nhwd=$(cat $hd.$pop.hwd | wc -l)
 
   echo $pop $Nhwd
 
@@ -104,20 +105,13 @@ done
 ## Step 4: Final pfile ##
 #########################
 
-cat tmp/*.hwd | cut -f 2 | \
-  sort | uniq > tmp/merged.hwd
+cat $hd.*.hwd | cut -f 2 | sort | uniq > $hd.merged.hwd
 
 plink2 \
-  --bfile tmp/KGP.merged \
-  --exclude tmp/merged.hwd \
+  --bfile $hd.merged \
+  --exclude $hd.merged.hwd \
   --make-pgen \
   --threads 4 \
   --memory 4800 \
-  --out out/KGP.qced
-
-rm tmp/KGP.nondup.*
-rm tmp/KGP.merged.*
-rm tmp/merge.{head,list}
-rm tmp/KGP.*.log
-rm tmp/*.hwd
+  --out out/KGP.qced && rm $hd.*
 

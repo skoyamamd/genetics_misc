@@ -19,8 +19,10 @@ set.seed(1111)
 test$knn  = knn(train[,2:11], test[,2:11], train$super_pop)
 train$knn = train$super_pop
 
-out = rbind(test, train) %>% filter(pop="tgt") %>% select(ID, knn)
-fwrite(out, outfile, sep="\t", quote=F, row.names=F)
+out    = rbind(test, train)
+outtab = out %>% filter(pop=="tgt") %>% select(ID, knn)
+
+fwrite(outtab, outfile, sep="\t", quote=F, row.names=F)
 
 pdf(outpdf, height=5, width=10)
 
