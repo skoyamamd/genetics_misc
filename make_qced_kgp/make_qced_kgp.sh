@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e
 set pipefail
 
@@ -18,7 +19,7 @@ hd=tmp/KGP.tmp
 ## Step 1: QC bfiles ##
 #######################
 
-for chr in {1..22}; do
+for chr in {11..22}; do
 
   file=ALL.chr${chr}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
 
@@ -37,7 +38,7 @@ for chr in {1..22}; do
 
   cat $hd.$chr.pvar | grep -v "#" | \
     cut -f 1,2 | sort | uniq -d | \
-    awk -v OFS="\t" '{print $1,$2-1,$2}' > $hd.$chr.dup.bed
+    awk -v OFS="\t" '{print $1,$2-1,$2}' >  $hd.$chr.dup.bed
 
   cat $hd.$chr.pvar | grep -v "#" | \
     awk '($4~/A|T/ && $5~/T|A/) || ($4~/C|G/ && $5~/C|G/)' | \

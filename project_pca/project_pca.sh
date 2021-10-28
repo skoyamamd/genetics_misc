@@ -1,10 +1,10 @@
-##########################
-## Useage               ##
-## bash 10_prep.sh \    ##
-##  <<kgp.pgen>> \      ##
-##  <<target.vcf.gz>> \ ##
-##  <<output_prefix>>   ##
-##########################
+################################
+## [Useage]                   ##
+## bash project_pca.sh \      ##
+##  <<qced_kgp_pgenheader>> \ ##
+##  <<target.vcf.gz>> \       ##
+##  <<output_prefix>>         ##
+################################
 
 kgp=$1
 vcf=$2
