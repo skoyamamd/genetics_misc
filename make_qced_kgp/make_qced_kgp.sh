@@ -1,29 +1,28 @@
 #!/bin/bash
+module load aws-cli/2.0
 
 set -e
 set pipefail
 
-####################################
-## Create qced 1KG genotypes      ##
-## dependencies plink2,plink,wget ##
-####################################
+########################################
+## Create qced 1KG genotypes          ##
+## dependencies plink2,plink,wget,aws ##
+########################################
 
 mkdir -p tmp out
-
-dir=ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20130502
-wget -O tmp/sample.panel $dir/integrated_call_samples_v3.20130502.ALL.panel
-
 hd=tmp/KGP.tmp
+dir=s3://1000genomes/release/20130502
+
+aws s3 --no-sign-request cp $dir/integrated_call_samples_v3.20130502.ALL.panel tmp/sample.panel
 
 #######################
 ## Step 1: QC bfiles ##
 #######################
 
-for chr in {11..22}; do
+for chr in {1..22}; do
 
   file=ALL.chr${chr}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz
-
-  wget -O tmp/$file $dir/$file
+  aws s3 --no-sign-request cp $dir/$file tmp/
 
   plink2 \
     --vcf tmp/$file \
@@ -76,6 +75,7 @@ plink \
   --bfile $(cat $hd.merge.head) \
   --merge-list $hd.merge.list \
   --threads 4 \
+  --keep-allele-order \
   --memory 4800 \
   --out $hd.merged
 
