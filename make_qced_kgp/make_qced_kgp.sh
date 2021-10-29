@@ -4,12 +4,13 @@ module load aws-cli/2.0
 set -e
 set pipefail
 
+mkdir -p tmp out
+
 ########################################
 ## Create qced 1KG genotypes          ##
 ## dependencies plink2,plink,wget,aws ##
 ########################################
 
-mkdir -p tmp out
 hd=tmp/KGP.tmp
 dir=s3://1000genomes/release/20130502
 
