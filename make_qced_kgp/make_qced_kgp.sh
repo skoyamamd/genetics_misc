@@ -14,7 +14,7 @@ mkdir -p tmp out
 hd=tmp/KGP.tmp
 dir=s3://1000genomes/release/20130502
 
-aws s3 --no-sign-request cp $dir/integrated_call_samples_v3.20130502.ALL.panel tmp/sample.panel
+aws s3 --no-sign-request cp $dir/integrated_call_samples_v3.20130502.ALL.panel out/sample.panel
 
 #######################
 ## Step 1: QC bfiles ##
@@ -84,13 +84,13 @@ plink \
 ## Step 3: population wise Hardy-Weinberg equilibrium filter ##
 ###############################################################
 
-cat tmp/sample.panel | sed '1d' | cut -f 3 | sort | uniq | while read pop; do
+cat out/sample.panel | sed '1d' | cut -f 3 | sort | uniq | while read pop; do
 
   plink2 \
     --bfile $hd.merged \
     --hwe 1e-6 \
     --hardy \
-    --keep <(cat tmp/sample.panel | sed '1d' | grep -w $pop | cut -f 1) \
+    --keep <(cat out/sample.panel | sed '1d' | grep -w $pop | cut -f 1) \
     --threads 4 \
     --memory 4800 \
     --out $hd.$pop > /dev/null
