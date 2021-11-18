@@ -9,6 +9,10 @@
 kgp=$1
 vcf=$2
 out=$3
+samplefile=$4
+
+thr=4
+mem=5400
 
 plink2 \
   --vcf $vcf \
@@ -19,24 +23,32 @@ plink2 \
   --rm-dup force-first \
   --snps-only just-acgt \
   --new-id-max-allele-len 10000 \
+  --threads $thr \
+  --memory $mem \
   --out $out.tmp
 
 plink2 \
   --pfile $kgp \
   --extract <(cat $out.tmp.pvar |cut -f 3) \
   --indep-pairwise 50 10 0.2 \
+  --threads $thr \
+  --memory $mem \
   --out $out.tmp
 
 plink2 \
   --pfile $kgp \
   --extract $out.tmp.prune.in \
   --make-pgen \
+  --threads $thr \
+  --memory $mem \
   --out $out.tmp.kgp_pruned
 
 plink2 \
   --pfile $out.tmp.kgp_pruned \
   --freq counts \
   --pca allele-wts \
+  --threads $thr \
+  --memory $mem \
   --out $out.tmp.kgp_pruned
 
 ## Score target population
@@ -47,6 +59,8 @@ plink2 \
   --score $out.tmp.kgp_pruned.eigenvec.allele 2 5 header-read no-mean-imputation variance-standardize \
   --rm-dup force-first \
   --score-col-nums 6-15 \
+  --threads $thr \
+  --memory $mem \
   --out $out.tmp.tgt
 
 ## Score kgp
@@ -57,6 +71,8 @@ plink2 \
   --score $out.tmp.kgp_pruned.eigenvec.allele 2 5 header-read no-mean-imputation variance-standardize \
   --rm-dup force-first \
   --score-col-nums 6-15 \
+  --threads $thr \
+  --memory $mem \
   --out $out.tmp.kgp
 
 ## merge the data
@@ -73,5 +89,6 @@ rm $out.tmp.*
 Rscript $(dirname $(readlink -f $0))/knn.R \
   $out.kgp_projected.txt.gz \
   $out.kgp_projected.knn.gz \
-  $out.kgp_projected.pdf
+  $out.kgp_projected.pdf \
+  $samplefile
 

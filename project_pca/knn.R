@@ -1,14 +1,15 @@
-library(class)
-library(tidyverse)
-library(data.table)
+suppressMessages(library(class))
+suppressMessages(library(tidyverse))
+suppressMessages(library(data.table))
 
 args    = commandArgs(trailingOnly=T)
 infile  = args[1]
 outfile = args[2]
 outpdf  = args[3]
+samplefile = args[4]
 
 d       = read.table(infile, fill=T, header=T)
-sample  = read.table("tmp/sample.panel", header=T)
+sample  = read.table(samplefile, header=T)
 tmp     = left_join(d, sample, by=c("ID" = "sample"))
 tmp$pop = ifelse(is.na(tmp$super_pop), "tgt", "kgp")
 
