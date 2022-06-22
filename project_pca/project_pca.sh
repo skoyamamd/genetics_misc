@@ -30,6 +30,7 @@ plink2 \
 plink2 \
   --pfile $kgp \
   --extract <(cat $out.tmp.pvar |cut -f 3) \
+  --exclude bed0 <(echo -e "6\t25000000\t35000000") \
   --indep-pairwise 50 10 0.2 \
   --threads $thr \
   --memory $mem \
